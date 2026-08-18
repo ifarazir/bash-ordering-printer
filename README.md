@@ -46,14 +46,29 @@ BashPrinterAgent.exe --version
 
 ## ساخت
 
-نیاز به .NET 8 SDK:
+سه راه، همه یک خروجی می‌دهند: `BashPrinterAgent.exe` — self-contained، بدون نیاز به نصب
+runtime روی کامپیوتر مقصد.
+
+**روی ویندوز:**
 
 ```powershell
 ./build.ps1
 ```
 
-خروجی `publish\BashPrinterAgent.exe` است — self-contained، بدون نیاز به نصب runtime روی
-کامپیوتر مقصد.
+**روی هر سیستم‌عاملی (mac/Linux هم) — cross-compile:**
+
+پروژه فقط به پکیج `System.Drawing.Common` وابسته است و WinForms/WPF ندارد، پس exeی ویندوزی
+از روی mac یا Linux هم ساخته می‌شود:
+
+```bash
+dotnet publish src/BashPrinterAgent/BashPrinterAgent.csproj -c Release -o dist
+```
+
+**روی CI (بدون هیچ ماشین محلی):**
+
+`.gitlab-ci.yml` در همین ریپو هست؛ با یک Linux runner، exe را به‌عنوان artifact می‌سازد.
+کافی است در تنظیمات پروژه در hamgit یک runner فعال باشد، بعد از هر push فایل از قسمت
+artifacts قابل دانلود است.
 
 ## اتصال به API
 

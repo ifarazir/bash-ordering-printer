@@ -1,0 +1,36 @@
+# Builds the Windows agent as a downloadable artifact — no Windows runner needed.
+#
+# The project references only System.Drawing.Common (a plain NuGet package) and does not
+# enable WinForms/WPF, so the win-x64 self-contained exe cross-compiles cleanly inside the
+# official Linux .NET SDK image. A shared or group Linux runner is enough; if the pipeline
+# stays "pending", enable a runner for this project in Settings → CI/CD → Runners.
+#
+# After a green pipeline: open the `publish` job → Browse/Download artifacts → dist/ holds
+# BashPrinterAgent.exe alongside appsettings.example.json and the README.
+
+stages:
+  - publish
+
+publish-windows-agent:
+  stage: publish
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  variables:
+    DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    DOTNET_NOLOGO: "1"
+    # Keep NuGet's cache inside the workspace so GitLab can cache it between runs.
+    NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  cache:
+    key: nuget-net8
+    paths:
+      - .nuget/packages
+  script:
+    - dotnet publish src/BashPrinterAgent/BashPrinterAgent.csproj -c Release -o dist
+    - cp README.md dist/README.md
+    - ls -lh dist
+  artifacts:
+    name: "BashPrinterAgent-win-x64-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - dist/BashPrinterAgent.exe
+      - dist/appsettings.example.json
+      - dist/README.md
+    expire_in: 90 days
