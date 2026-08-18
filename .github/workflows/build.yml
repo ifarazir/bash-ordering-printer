@@ -1,0 +1,53 @@
+name: Build Windows Agent
+
+# Builds BashPrinterAgent.exe on a real Windows runner and uploads it as a downloadable
+# artifact. Runs on every push to main, on demand, and on version tags (v1.2.3) — a tag
+# push additionally attaches the zip to a GitHub Release.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed only for the release step on tags
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish self-contained exe
+        run: dotnet publish src/BashPrinterAgent/BashPrinterAgent.csproj -c Release -o dist
+
+      - name: Stage distributable
+        shell: pwsh
+        run: |
+          Copy-Item README.md dist/README.md
+          Get-ChildItem dist | Format-Table Name,Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BashPrinterAgent-win-x64
+          path: |
+            dist/BashPrinterAgent.exe
+            dist/appsettings.example.json
+            dist/README.md
+          if-no-files-found: error
+
+      - name: Attach to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: Compress-Archive -Path dist/BashPrinterAgent.exe,dist/appsettings.example.json,dist/README.md -DestinationPath BashPrinterAgent-win-x64.zip
+
+      - name: Create release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: BashPrinterAgent-win-x64.zip

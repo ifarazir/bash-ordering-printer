@@ -66,9 +66,12 @@ dotnet publish src/BashPrinterAgent/BashPrinterAgent.csproj -c Release -o dist
 
 **روی CI (بدون هیچ ماشین محلی):**
 
-`.gitlab-ci.yml` در همین ریپو هست؛ با یک Linux runner، exe را به‌عنوان artifact می‌سازد.
-کافی است در تنظیمات پروژه در hamgit یک runner فعال باشد، بعد از هر push فایل از قسمت
-artifacts قابل دانلود است.
+- **GitHub Actions** (`.github/workflows/build.yml`): روی `windows-latest` به‌صورت native
+  build می‌کند و exe را به‌عنوان artifact آپلود می‌کند. با push یک tag مثل `v1.0.0` یک
+  Release هم با فایل zip می‌سازد. رانر رایگان است و نیازی به تنظیم ندارد.
+- **GitLab CI** (`.gitlab-ci.yml`): برای hamgit؛ با یک Linux runnerِ فعال، همان exe را
+  cross-compile و به‌عنوان artifact می‌سازد. اگر پروژه رانر نداشته باشد، pipeline در حالت
+  «pending» می‌ماند و باید ابتدا یک runner برایش فعال شود.
 
 ## اتصال به API
 
