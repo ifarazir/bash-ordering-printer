@@ -17,6 +17,7 @@ public sealed record PrintJob(
 
 public sealed record HeartbeatResult(
     [property: JsonPropertyName("selected_printer")] string? SelectedPrinter,
+    [property: JsonPropertyName("selected_printers")] List<string>? SelectedPrinters,
     [property: JsonPropertyName("poll_interval_ms")] int PollIntervalMs,
     [property: JsonPropertyName("receipt_width_dots")] int ReceiptWidthDots);
 

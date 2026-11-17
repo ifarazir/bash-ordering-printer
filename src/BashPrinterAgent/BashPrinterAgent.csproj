@@ -8,12 +8,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>BashPrinterAgent</AssemblyName>
     <RootNamespace>BashPrinterAgent</RootNamespace>
+    <Version>1.1.0</Version>
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- One .exe on a shop PC with nothing installed on it. -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Roughly halves the exe; it is committed to the panel repo and downloaded from there. -->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
   <ItemGroup>

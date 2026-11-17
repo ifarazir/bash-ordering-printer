@@ -72,9 +72,12 @@ public static class Program
 
                 // Only speak when something changes. A line every three seconds turns the
                 // window into noise nobody reads, which is where real errors go to hide.
-                var state = beat?.SelectedPrinter is null
-                    ? "connected — no receipt printer chosen in the panel yet"
-                    : $"connected — printing to \"{beat.SelectedPrinter}\"";
+                // One PC can drive several printers (till + kitchen); older servers send one name.
+                var selected = beat?.SelectedPrinters
+                    ?? (beat?.SelectedPrinter is null ? new List<string>() : new List<string> { beat.SelectedPrinter });
+                var state = selected.Count == 0
+                    ? "connected — no printer on this PC is assigned in the panel yet"
+                    : $"connected — printing to {string.Join(", ", selected.Select(p => $"\"{p}\""))}";
 
                 if (state != lastReportedState)
                 {
@@ -82,8 +85,9 @@ public static class Program
                     lastReportedState = state;
                 }
 
-                var job = await api.NextJobAsync(ct);
-                if (job is not null)
+                // Drain the queue before sleeping: one order sends a job to each printer on this
+                // PC, and the kitchen copy should not wait a poll interval behind the till's.
+                while (!ct.IsCancellationRequested && await api.NextJobAsync(ct) is { } job)
                     await PrintJobAsync(api, config, job, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
